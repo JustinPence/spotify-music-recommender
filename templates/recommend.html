@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Recommendations</title>
+    <style>
+      :root{
+        --bg:#0f172a; --fg:#e2e8f0; --muted:#94a3b8; --brand1:#22d3ee; --brand2:#a78bfa;
+        --card:#0b1224; --chip:#1f2937;
+      }
+      *{box-sizing:border-box;font-family:system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;}
+      body{margin:0;background:linear-gradient(135deg,#0b1020,#0f172a);color:var(--fg);}
+      .wrap{max-width:1100px;margin:40px auto;padding:20px;}
+      h2{margin:0 0 18px;font-size:28px;background:linear-gradient(90deg,var(--brand1),var(--brand2));
+         -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+      .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 16px}
+      .card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+            border-radius:18px;padding:18px;backdrop-filter: blur(6px); margin-bottom:14px; display:flex; gap:14px; align-items:center;}
+      .meta{flex:1}
+      img{border-radius:10px}
+      .btn{border:0;background:linear-gradient(90deg,#06b6d4,#7c3aed);color:white;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+      .btn:hover{filter:brightness(1.1)}
+      a{color:#93c5fd}
+      input[type="text"]{background:#0b1326;border:1px solid rgba(255,255,255,.12);color:var(--fg);border-radius:10px;padding:8px}
+      label{font-weight:600}
+      ul{margin:8px 0 0 18px}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h2>Recommendations</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul>
+            {% for cat, msg in messages %}
+              <li><strong>{{ cat }}:</strong> {{ msg }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      {% if tracks|length == 0 %}
+        <p>No tracks returned. Try different genres or mood sliders.</p>
+        <p><a href="/dashboard">Back to Dashboard</a></p>
+      {% else %}
+        <form method="post" action="/playlist/create">
+          <div class="bar">
+            <label>Playlist name:</label>
+            <input type="text" name="playlist_name" placeholder="Mood/Genre Mix">
+            <label style="margin-left:6px"><input type="checkbox" name="public"> Public</label>
+            <button class="btn" type="submit">Create Playlist</button>
+          </div>
+
+          <div>
+            {% for t in tracks %}
+              <div class="card">
+                {% if t.album_img %}
+                  <img src="{{ t.album_img }}" width="64" height="64" alt="Album cover">
+                {% endif %}
+                <div class="meta">
+                  <div><strong>{{ t.name }}</strong> — {{ t.artists }} ( <a target="_blank" href="{{ t.external_url }}">Open</a> )</div>
+                  {% if t.preview_url %}
+                    <audio controls src="{{ t.preview_url }}"></audio>
+                  {% endif %}
+                </div>
+                <label><input type="checkbox" name="track_uri" value="{{ t.uri }}" checked> include</label>
+              </div>
+            {% endfor %}
+          </div>
+        </form>
+
+        <p><a href="/dashboard">Back to Dashboard</a></p>
+      {% endif %}
+    </div>
+  </body>
+</html>

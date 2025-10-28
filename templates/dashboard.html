@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Dashboard</title>
+    <style>
+      :root{
+        --bg:#0f172a; --fg:#e2e8f0; --muted:#94a3b8; --brand1:#22d3ee; --brand2:#a78bfa;
+        --card:#0b1224; --accent:#22c55e; --chip:#1f2937;
+      }
+      *{box-sizing:border-box;font-family:system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;}
+      body{margin:0;background:radial-gradient(1200px 600px at 20% -10%, #1e293b 0%, transparent 60%),
+                   radial-gradient(1000px 600px at 100% 0%, #0ea5e9 0%, transparent 55%),
+                   linear-gradient(180deg,#0b1020,#0f172a 60%, #0b1020);
+           color:var(--fg);}
+      .wrap{max-width:1100px;margin:40px auto;padding:20px;}
+      h2{margin:0 0 18px;font-size:28px;background:linear-gradient(90deg,var(--brand1),var(--brand2));
+         -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+      .grid{display:grid;gap:18px;grid-template-columns:1.2fr .8fr;}
+      .card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+            border-radius:18px;padding:20px;backdrop-filter: blur(6px);}
+      label{font-weight:600}
+      .row{display:flex;gap:14px;align-items:center;margin:10px 0;}
+      select, input[type="number"], input[type="range"]{
+        width:100%;background:#0b1326;border:1px solid rgba(255,255,255,.12);color:var(--fg);
+        border-radius:10px;padding:8px;
+      }
+      .chips{display:flex;gap:8px;flex-wrap:wrap}
+      .chip{background:var(--chip);padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.08);font-size:12px}
+      .btn{border:0;background:linear-gradient(90deg,#06b6d4,#7c3aed);color:white;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+      .btn:hover{filter:brightness(1.1)}
+      a{color:#93c5fd}
+      .muted{color:var(--muted)}
+      ul{margin:8px 0 0 18px}
+    </style>
+    <script>
+      // live value bubbles
+      function bindSlider(id, outId){
+        const el=document.getElementById(id), out=document.getElementById(outId);
+        if(el && out){ el.addEventListener('input', ()=> out.textContent = el.value ); out.textContent = el.value; }
+      }
+      window.addEventListener('DOMContentLoaded', ()=>{
+        bindSlider('energy10','energyOut');
+        bindSlider('positivity10','positivityOut');
+        bindSlider('dance10','danceOut');
+      });
+    </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <h2>Welcome {{ display_name }}</h2>
+
+      <div class="grid">
+        <div class="card">
+          <h3>Create Recommendations</h3>
+          <form method="post" action="/recommend">
+            <div class="row">
+              <label>Mood</label>
+              <select name="mood">
+                <option value="">None</option>
+                <option value="happy">Happy</option>
+                <option value="chill">Chill</option>
+                <option value="focus">Focus</option>
+                <option value="party">Party</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <label>Genres (pick up to 5)</label>
+              <select name="genres" multiple size="8">
+                {% for g in genres %}
+                  <option value="{{ g }}">{{ g }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="row">
+              <label>Energy (1–10): <span class="chip" id="energyOut">5</span></label>
+              <input id="energy10" type="range" min="1" max="10" value="5" name="energy10">
+            </div>
+
+            <div class="row">
+              <label>Positivity (1–10): <span class="chip" id="positivityOut">5</span></label>
+              <input id="positivity10" type="range" min="1" max="10" value="5" name="positivity10">
+            </div>
+
+            <div class="row">
+              <label>Danceability (1–10): <span class="chip" id="danceOut">5</span></label>
+              <input id="dance10" type="range" min="1" max="10" value="5" name="danceability10">
+            </div>
+
+            <div class="row">
+              <label>How many tracks?</label>
+              <input type="number" name="limit" value="15" min="1" max="30" style="max-width:120px">
+              <button class="btn" type="submit">Get Recommendations</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>Your Recent Playlists</h3>
+          <ul>
+            {% for p in history %}
+              <li>
+                {{ p.created_at.strftime('%Y-%m-%d %H:%M') }} — {{ p.name }}
+                ( <a target="_blank" href="https://open.spotify.com/playlist/{{ p.spotify_playlist_id }}">Open</a> )
+              </li>
+            {% else %}
+              <li class="muted">No playlists yet.</li>
+            {% endfor %}
+          </ul>
+          <p style="margin-top:16px;"><a href="/logout">Logout</a></p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
